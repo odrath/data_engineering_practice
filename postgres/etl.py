@@ -14,9 +14,8 @@ def process_song_file(cur, filepath):
     df = pd.read_json (filepath,lines=True)
 
     # insert song record
-    song_data = df[['song_id','title','artist_id','year','duration']].iloc[0].values.tolist()
+    song_data = df[['song_id', 'title', 'artist_id', 'year', 'duration']].iloc[0].values.tolist()
     cur.execute(song_table_insert, song_data)
-    
     # insert artist record
     artist_data = df[['artist_id','artist_name','artist_location','artist_latitude','artist_longitude']].iloc[0].values.tolist()
     cur.execute(artist_table_insert, artist_data)
@@ -34,7 +33,7 @@ def process_log_file(cur, filepath):
     
     # insert time data records
     time_data = [t,t.dt.hour,t.dt.day,t.dt.week,t.dt.month,t.dt.year,t.dt.weekday]
-    column_labels = ['timestamp','hour','day','week','month','year','weekday']
+    column_labels = ['timestamp', 'hour', 'day', 'week', 'month','year','weekday']
     time_dict = {column_labels[i]: time_data[i] for i in range(len(column_labels))}
     time_df = pd.DataFrame.from_dict(time_dict, orient='columns')
 
@@ -42,7 +41,7 @@ def process_log_file(cur, filepath):
         cur.execute(time_table_insert, list(row))
 
     # load user table
-    user_df = df[['userId','firstName','lastName','gender','level']].drop_duplicates(subset = ['userId'])
+    user_df = df[['userId','firstName','lastName','gender','level']].drop_duplicates(subset=['userId'])
 
     # insert user records
     for i, row in user_df.iterrows():
@@ -79,19 +78,25 @@ def process_data(cur, conn, filepath, func):
 
     # iterate over files and process
     for i, datafile in enumerate(all_files, 1):
-        func(cur, datafile)
-        conn.commit()
-        print('{}/{} files processed.'.format(i, num_files))
+        try:
+            func(cur, datafile)
+            conn.commit()
+            print('File {}/{} processed.'.format(i, num_files))
+        except psycopg2.Error as e:
+            print('File {}/{} not processed.'.format(i, num_files))
+            print(e)
 
 
 def main():
-    conn = psycopg2.connect("host=127.0.0.1 dbname=sparkifydb user=student password=student")
-    cur = conn.cursor()
-
-    process_data(cur, conn, filepath='data/song_data', func=process_song_file)
-    process_data(cur, conn, filepath='data/log_data', func=process_log_file)
-
-    conn.close()
+    try:
+        conn = psycopg2.connect("host=127.0.0.1 dbname=sparkifydb user=student password=student")
+        cur = conn.cursor()
+        process_data(cur, conn, filepath='data/song_data', func=process_song_file)
+        process_data(cur, conn, filepath='data/log_data', func=process_log_file)
+        conn.close()
+    except psycopg2.Error as e:
+        print("Error: Could not get cursor to the DB")
+        print(e)
 
 
 if __name__ == "__main__":
