@@ -49,7 +49,7 @@ artist_table_create = ("""CREATE TABLE IF NOT EXISTS artists (
 """)
 
 time_table_create = ("""CREATE TABLE IF NOT EXISTS time (
-                        start_time timestamp without time zone
+                        start_time timestamp without time zone PRIMARY KEY
                         ,hour smallint
                         ,day smallint
                         ,week smallint
@@ -115,6 +115,7 @@ time_table_insert = ("""INSERT INTO time
                               ,year
                               ,weekday) 
                               VALUES (%s, %s,%s, %s,%s,%s,%s)
+                              ON CONFLICT (start_time) DO NOTHING
 """)
 
 # FIND SONGS  song ID and artist ID based on the title, artist name, and duration of a song
