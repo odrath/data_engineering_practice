@@ -16,7 +16,9 @@ user_id (int) - unique ID of each user, a foreign key linking to the *time* tabl
 level (varchar) - user level (free or paid), a foreign key linking to the *songs* table  
 song_id (varchar) - a unique ID of each song,a foreign key linking to the *songs* table  
 artist_id (varchar) - a unique ID of each artist, a foreign key linking to the *artists* table  
-session_id (int) - , location, user_agent  
+session_id (int) - a unique ID of each listening session,  
+location (varchar) - location of the user,  
+user_agent (varchar)
 ##### Dimension Tables
 1. *users* - users in the app  
 Columns: user_id, first_name, last_name, gender, level  
@@ -33,7 +35,7 @@ The ETL process relies on two scripts, which have to be executed in the order be
 This script uses SQL queries from `sql_queries.py` to create all Fact and Dimension tables.
 2. `etl.py`  
 This script runs an ETL process to extract data from song_data and log_data directories and inserts it into all the tables.  
-The script currently does not accomodate updating rows with already existing primary keys, partly due to the fact that the ETL process assumes dropping and recreating tables from scratch each time. More customised UPSERT process could be established for incremental loads, *i.e* where new song files are being added to the song_data folder on regular basis. 
+The script currently accomodates updating rows with already existing primary keys only for the *users* table to account for the change of the user level from 'free' to 'paid' and vice versa. More customised UPSERT process could be established for incremental loads, *i.e* where new song files are being added to the song_data folder on regular basis. 
 
 #### Testing and example queries with the outcome
 
